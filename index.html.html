@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Ink Stock Monitor - V8 (Sheet DB)</title>
+    <style>
+        body {
+            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9; 
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 25px;
+        }
+        h1 {
+            width: 100%;
+            text-align: center;
+            color: #1a73e8; 
+            margin-bottom: 25px;
+            font-size: 2.2em;
+            font-weight: 500;
+        }
+        h2 {
+            color: #1a73e8;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            font-weight: 500;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
+        .section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            flex-basis: 48%; 
+            box-sizing: border-box; 
+            min-width: 350px; 
+            transition: transform 0.2s;
+        }
+        .section:hover {
+            transform: translateY(-2px); 
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #f0f0f0;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        th {
+            background-color: #1a73e8; 
+            color: white;
+            text-transform: uppercase;
+            font-weight: 400;
+        }
+        .low-stock {
+            background-color: #fdd8d8 !important; 
+            color: #c0392b;
+            font-weight: bold;
+        }
+        input[type="number"], input[type="date"], select, input[type="text"] {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 5px;
+            transition: border-color 0.2s;
+            flex-grow: 1;
+        }
+        input:focus, select:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+            outline: none;
+        }
+        .action-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .add-btn { background-color: #34a853; color: white; } 
+        .add-btn:hover { background-color: #2c8c46; }
+
+        .use-btn { background-color: #ea4335; color: white; } 
+        .use-btn:hover { background-color: #c93327; }
+
+        .save-btn { background-color: #fbbc05; color: #333; margin-top: 15px; } 
+        .save-btn:hover { background-color: #e5a800; }
+
+        .export-btn { background-color: #1a73e8; color: white; } 
+        .export-btn:hover { background-color: #155bb5; }
+
+        .clear-btn { background-color: #6c757d; color: white; margin-left: 10px; }
+        .clear-btn:hover { background-color: #5a6268; }
+
+        .history-table th { background-color: #6c757d; }
+        
+        .alert-info {
+            width: 100%; 
+            padding: 12px;
+            background-color: #fff3cd; /* Yellow alert for warning/info */
+            border: 1px solid #ffeeba;
+            color: #856404;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+        .movement-controls {
+            display: flex;
+            flex-direction: column; 
+            gap: 10px;
+        }
+        .movement-controls > * {
+            width: 100%; 
+            margin: 0;
+        }
+        .movement-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .history-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .history-header-controls h2 {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        .wide-section {
+            flex-basis: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Professional Ink Stock Monitor (Google Sheets DB)</h1>
+
+    <p class="alert-info">
+        **🔴 முக்கியம் (Important):** இந்தப் பக்கம் தரவைச் சேமிக்க **Local Storage**-க்குப் பதிலாக **Google Sheets**-ஐப் பயன்படுத்துகிறது. உள்ளிடும் தரவுகள் உங்கள் **Google Sheet-ன் 'Transaction Log' ஷீட்டிற்கு** அனுப்பப்படும்.
+    </p>
+
+    <div class="section">
+        <h2>1. Current Stock Status (Qty)</h2>
+        <p>⚠️ **குறிப்பு:** இந்த டேட்டா உங்கள் Google Sheet-ல் இருந்து நேரடியாகப் படிக்கப்படுவதில்லை. சமீபத்திய ஸ்டாக் அளவைக் காண உங்கள் Google Sheet-ஐப் பார்க்கவும். minLevel-ஐ உள்ளூர் அளவில் மாற்ற முடியாது.</p>
+        <table id="currentStockTable">
+            <thead>
+                <tr>
+                    <th>Ink Type</th>
+                    <th>Current Stock (Approx)</th>
+                    <th>Min Alert (Qty)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody">
+                </tbody>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>2. Record Stock Movement (Writes to Sheet)</h2>
+        <div class="movement-controls">
+            <select id="inkSelect">
+                </select>
+            
+            <select id="printerSelect" onchange="updateMovementButtons()">
+                <option value="">-- Select Printer/Location --</option>
+                <option value="Printer 1">Printer 1</option>
+                <option value="Printer 2">Printer 2</option>
+                <option value="General Stock">General Stock (Stock In/Out)</option>
+            </select>
+            
+            <input type="number" id="movementAmount" min="0" placeholder="Amount (Qty)">
+            
+            <input type="date" id="movementDate" value="">
+            
+            <div class="movement-buttons">
+                <button class="action-btn add-btn" id="addBtn" onclick="handleMovement('ADD')">➕ Stock In</button>
+                <button class="action-btn use-btn" id="useBtn" onclick="handleMovement('USE')">➖ Ink Used</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section wide-section">
+        <div class="history-header-controls">
+            <h2>3. History Log & Export</h2>
+            <div>
+                <button class="action-btn export-btn" onclick="alert('All history is stored in your Google Sheet. Please use the Sheet to view and export data.')">🔍 View Sheet History</button>
+            </div>
+        </div>
+        <p>உங்கள் அனைத்துப் பதிவுகளும் Google Sheet-ல் உள்ளது. தயவுசெய்து உங்கள் Sheet-ஐச் சரிபார்க்கவும்.</p>
+    </div>
+</div>
+
+<script>
+    // ⚠️ IMPORTANT: REPLACE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
+    const WEB_APP_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE'; 
+
+    const INITIAL_INKS = [
+        { name: "Cyan", currentStock: 5, minLevel: 10 },
+        { name: "Magenta", currentStock: 7, minLevel: 10 },
+        { name: "Yellow", currentStock: 0, minLevel: 10 },
+        { name: "Black", currentStock: 12, minLevel: 15 },
+        { name: "Spot Blue (Example)", currentStock: 5, minLevel: 5 }
+    ];
+
+    // --- Rendering Functions ---
+    function renderStockTable(inkData) {
+        const tableBody = document.getElementById('stockTableBody');
+        tableBody.innerHTML = '';
+        const inkSelect = document.getElementById('inkSelect');
+        inkSelect.innerHTML = '';
+
+        inkData.forEach(ink => {
+            const isLowStock = ink.currentStock < ink.minLevel;
+            const row = tableBody.insertRow();
+            row.className = isLowStock ? 'low-stock' : '';
+
+            row.insertCell().textContent = ink.name;
+            // NOTE: Stock cannot be updated in real-time without complex code, so this is illustrative
+            row.insertCell().textContent = Math.round(ink.currentStock * 100) / 100 + " (Initial)";
+            
+            row.insertCell().textContent = ink.minLevel;
+
+            const statusCell = row.insertCell();
+            statusCell.textContent = isLowStock ? "💥 Low Stock" : "✅ Sufficient";
+            statusCell.style.color = isLowStock ? '#c0392b' : '#34a853';
+
+            const option = document.createElement('option');
+            option.value = ink.name;
+            option.textContent = ink.name;
+            inkSelect.appendChild(option);
+        });
+    }
+
+    // --- Dynamic Button Control Function ---
+    function updateMovementButtons() {
+        const printerSelect = document.getElementById('printerSelect').value;
+        const addBtn = document.getElementById('addBtn');
+        const useBtn = document.getElementById('useBtn');
+
+        if (printerSelect === 'General Stock') {
+            addBtn.style.display = 'inline-block'; 
+            useBtn.style.display = 'inline-block'; 
+        } else if (printerSelect === 'Printer 1' || printerSelect === 'Printer 2') {
+            addBtn.style.display = 'none';        
+            useBtn.style.display = 'inline-block'; 
+        } else {
+            addBtn.style.display = 'none';
+            useBtn.style.display = 'none';
+        }
+    }
+
+    // --- Data Handling Function (Sends to Google Sheets) ---
+    async function handleMovement(type) {
+        // 1. Input Validation
+        const inkName = document.getElementById('inkSelect').value;
+        const printerName = document.getElementById('printerSelect').value; 
+        const amount = parseFloat(document.getElementById('movementAmount').value);
+        const date = document.getElementById('movementDate').value;
+        const operation = type === 'ADD' ? 'Stock Added' : 'Used Ink';
+        const signedAmount = type === 'ADD' ? amount : -amount; // Send negative number for USE
+
+        if (!inkName || !amount || amount <= 0 || !date) {
+            alert("Please enter the Ink, Amount, and Date.");
+            return;
+        }
+
+        if (type === 'USE' && !printerName) {
+            alert("Please select the Printer/Location that used the ink.");
+            return;
+        }
+        
+        if (type === 'ADD' && printerName !== 'General Stock') {
+            alert("Stock In operations must be logged against 'General Stock'.");
+            return;
+        }
+        
+        if (WEB_APP_URL === 'https://script.google.com/a/macros/garrison.com.sg/s/AKfycbwzkzQlPwZxH2kXADVKr8Ji6kzRUADkQ28vTjtJQlxSxczVH_O254EQc6H43H2b2sY/exec') {
+            alert('❌ ERROR: Please update the WEB_APP_URL variable in the code with your actual Apps Script URL.');
+            return;
+        }
+
+        // 2. Prepare Data for POST
+        const formData = new FormData();
+        formData.append('date', date);
+        formData.append('ink', inkName);
+        formData.append('printer', type === 'USE' ? printerName : 'Stock In');
+        formData.append('amount', signedAmount); // This is the numerical change (+/-)
+        formData.append('operation', operation); 
+
+        // 3. Send Data to Google Sheets Web App
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors' 
+            });
+
+            alert(`✅ Transaction (${operation}) Logged to Sheet successfully! Check your Google Sheet to see the update.`);
+            
+            // 4. Clear local inputs after successful log
+            document.getElementById('movementAmount').value = '';
+            document.getElementById('movementDate').value = new Date().toISOString().substring(0, 10);
+            document.getElementById('printerSelect').value = ''; 
+            updateMovementButtons();
+
+        } catch (error) {
+            console.error('Error logging data to sheet:', error);
+            alert('❌ Error: Could not log data to the Sheet. Check console for details.');
+        }
+    }
+
+    // --- Initialization ---
+    function initialize() {
+        const today = new Date().toISOString().substring(0, 10);
+        document.getElementById('movementDate').value = today;
+        
+        renderStockTable(INITIAL_INKS); // Render initial data for display
+        
+        updateMovementButtons(); 
+    }
+
+    document.addEventListener('DOMContentLoaded', initialize);
+</script>
+
+</body>
+</html>
